@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 
-const surgeonSchema = new mongoose.Schema(
+const { Schema, model } = mongoose;
+
+const surgeonSchema = new Schema(
   {
     name: { type: String, required: true }, // Surgeon's full name
     specialty: { type: String, required: true }, // Surgical specialty
@@ -44,4 +46,4 @@ const surgeonSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Surgeon", surgeonSchema);
+export default mongoose.model("Surgeon", surgeonSchema);

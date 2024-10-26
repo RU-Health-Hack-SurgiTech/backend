@@ -2,6 +2,7 @@ import moment from "moment";
 import Surgery from "../models/Surgery.js";
 import Instrument from "../models/Instrument.js";
 import Supply from "../models/Supply.js";
+import Surgeon from "../models/Surgeon.js";
 
 export const suggestFeasibleSchedule = async (schedule) => {
   try {
@@ -36,15 +37,18 @@ export const suggestFeasibleSchedule = async (schedule) => {
     let suggestedSchedule = [];
 
     // Sort schedule by day to process each date individually
-    const scheduleByDate = schedule.reduce((acc, { time, surgery }) => {
-      const day = moment(time).format("YYYY-MM-DD");
-      if (!acc[day]) acc[day] = [];
-      acc[day].push({ time, surgery });
-      return acc;
-    }, {});
+    const scheduleByDate = schedule.reduce(
+      (acc, { time, surgery, surgeonName }) => {
+        const day = moment(time).format("YYYY-MM-DD");
+        if (!acc[day]) acc[day] = [];
+        acc[day].push({ time, surgery, surgeonName });
+        return acc;
+      },
+      {}
+    );
 
     for (const [day, surgeries] of Object.entries(scheduleByDate)) {
-      for (const { time, surgery: surgeryCode } of surgeries) {
+      for (const { time, surgery: surgeryCode, surgeonName } of surgeries) {
         const scheduledTime = moment(time);
         let resolvedTime = scheduledTime;
         let reasons = [];
@@ -57,12 +61,22 @@ export const suggestFeasibleSchedule = async (schedule) => {
           };
         }
 
+        const surgeon = await Surgeon.findOne({ name: surgeonName })
+          .populate("preferences.instruments._id")
+          .populate("preferences.supplies._id");
+
         let dayConflict = false;
 
-        // Instrument scheduling for this surgery on the given day
+        // Instrument scheduling based on surgeon's preferences or default surgery requirements
         for (const instrumentReq of surgeryDetails.instruments) {
           const instrumentId = instrumentReq._id._id.toString();
           const instrument = instrumentAvailability[instrumentId];
+
+          // Give priority to surgeon's preference, otherwise use surgery quantity
+          const preferredQty =
+            surgeon?.preferences?.instruments.find(
+              (pref) => pref._id._id.toString() === instrumentId
+            )?.qty || instrumentReq.qty;
 
           if (!instrument) {
             throw new Error(
@@ -88,14 +102,14 @@ export const suggestFeasibleSchedule = async (schedule) => {
               .clone()
               .add(surgeryDetails.expectedDuration, "minutes");
           } else {
-            if (instrument.totalQTY < instrumentReq.qty) {
+            if (instrument.totalQTY < preferredQty) {
               reasons.push(
                 `Insufficient quantity of non-reusable instrument ${instrumentReq._id.name}`
               );
               dayConflict = true;
               break;
             }
-            instrument.totalQTY -= instrumentReq.qty;
+            instrument.totalQTY -= preferredQty;
           }
         }
 
@@ -103,15 +117,22 @@ export const suggestFeasibleSchedule = async (schedule) => {
           suggestedSchedule.push({
             time: scheduledTime.format("MM/DD/YYYY HH:mm"),
             surgery: surgeryCode,
+            surgeon: surgeonName,
             reason: "Conflict on this day. Try another day.",
           });
           continue;
         }
 
-        // Supply scheduling for this surgery on the given day
+        // Supply scheduling based on surgeon's preferences or default surgery requirements
         for (const supplyReq of surgeryDetails.supplies) {
           const supplyId = supplyReq._id._id.toString();
           const supply = supplyAvailability[supplyId];
+
+          // Give priority to surgeon's preference, otherwise use surgery quantity
+          const preferredQty =
+            surgeon?.preferences?.supplies.find(
+              (pref) => pref._id._id.toString() === supplyId
+            )?.qty || supplyReq.qty;
 
           if (!supply) {
             throw new Error(
@@ -137,14 +158,14 @@ export const suggestFeasibleSchedule = async (schedule) => {
               .clone()
               .add(surgeryDetails.expectedDuration, "minutes");
           } else {
-            if (supply.totalQTY < supplyReq.qty) {
+            if (supply.totalQTY < preferredQty) {
               reasons.push(
                 `Insufficient quantity of non-reusable supply ${supplyReq._id.name}`
               );
               dayConflict = true;
               break;
             }
-            supply.totalQTY -= supplyReq.qty;
+            supply.totalQTY -= preferredQty;
           }
         }
 
@@ -152,6 +173,7 @@ export const suggestFeasibleSchedule = async (schedule) => {
           suggestedSchedule.push({
             time: scheduledTime.format("MM/DD/YYYY HH:mm"),
             surgery: surgeryCode,
+            surgeon: surgeonName,
             reason: "Conflict on this day. Try another day.",
           });
           continue;
@@ -161,6 +183,7 @@ export const suggestFeasibleSchedule = async (schedule) => {
         suggestedSchedule.push({
           time: resolvedTime.format("MM/DD/YYYY HH:mm"),
           surgery: surgeryCode,
+          surgeon: surgeonName,
           reason: reasons.length
             ? reasons.join("; ")
             : "Scheduled as requested",

@@ -38,4 +38,5 @@ const surgerySchema = new Schema({
   expectedDuration: { type: Number, required: true },
 });
 
-export default mongoose.model("Surgery", surgerySchema);
+export default mongoose.models.Surgery ||
+  mongoose.model("Surgery", surgerySchema);

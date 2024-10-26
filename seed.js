@@ -3,6 +3,7 @@ import Surgery from "./models/Surgery.js";
 import Instrument from "./models/Instrument.js";
 import Supply from "./models/Supply.js";
 import Robot from "./models/Robot.js";
+import Surgeon from "./models/Surgeon.js";
 import { dbConnection } from "./config/mongoConnection.js";
 
 const seedData = async () => {
@@ -13,6 +14,8 @@ const seedData = async () => {
   await Instrument.deleteMany({});
   await Supply.deleteMany({});
   await Robot.deleteMany({});
+  await Surgeon.deleteMany({});
+  // mongoose.deleteModel(/.+/); // Clears all cached models
 
   const instruments = [
     {
@@ -74,7 +77,7 @@ const seedData = async () => {
       name: "Surgical Mask",
       totalQTY: 300,
       reusable: true,
-      sterilizationTime: 20, // in minutes
+      sterilizationTime: 20,
       sterile: true,
       expiryDate: new Date("2026-01-31"),
     },
@@ -91,7 +94,7 @@ const seedData = async () => {
       name: "Endoscope",
       totalQTY: 10,
       reusable: true,
-      sterilizationTime: 60, // in minutes
+      sterilizationTime: 60,
       sterile: true,
       expiryDate: new Date("2026-12-31"),
     },
@@ -100,13 +103,13 @@ const seedData = async () => {
       name: "Catheter",
       totalQTY: 150,
       reusable: true,
-      sterilizationTime: 30, // in minutes
+      sterilizationTime: 30,
       sterile: true,
       expiryDate: new Date("2025-11-30"),
     },
   ];
 
-  // Updated surgeries to use the new supplies data
+  // Surgeries to be linked to surgeon's procedures
   const surgeries = [
     {
       name: "Appendectomy",
@@ -141,100 +144,63 @@ const seedData = async () => {
       ],
       expectedDuration: 120,
     },
+  ];
+
+  // Insert surgeries into the Surgery collection and fetch their IDs
+  const insertedSurgeries = await Surgery.insertMany(surgeries);
+
+  // Define surgeons with references to surgeries
+  const surgeons = [
     {
-      name: "Cataract Surgery",
-      code: "66984",
-      instruments: [
-        { _id: instruments[0]._id, qty: 1 }, // Scalpel
-        { _id: instruments[1]._id, qty: 1 }, // Forceps
-      ],
-      supplies: [
-        { _id: supplies[0]._id, qty: 2 }, // Syringe
-        { _id: supplies[2]._id, qty: 1 }, // Surgical Mask
-      ],
-      expectedDuration: 60,
+      name: "Dr. John Doe",
+      specialty: "General Surgery",
+      procedure: {
+        name: insertedSurgeries[0].name, // Appendectomy
+        code: insertedSurgeries[0].code,
+      },
+      preferences: {
+        instruments: [
+          { _id: instruments[0]._id, qty: 7 }, // Scalpel
+          { _id: instruments[1]._id, qty: 2 }, // Forceps
+        ],
+        robots: [
+          { _id: robots[0]._id, qty: 1 }, // Da Vinci Robot
+        ],
+        supplies: [
+          { _id: supplies[1]._id, qty: 8 }, // Gauze
+          { _id: supplies[3]._id, qty: 2 }, // IV Bag
+          { _id: supplies[5]._id, qty: 7 }, // Catheter
+        ],
+      },
     },
     {
-      name: "Hernia Repair",
-      code: "49585",
-      instruments: [
-        { _id: instruments[1]._id, qty: 2 }, // Forceps
-        { _id: instruments[2]._id, qty: 2 }, // Surgical Scissors
-      ],
-      supplies: [
-        { _id: supplies[1]._id, qty: 5 }, // Gauze
-        { _id: supplies[4]._id, qty: 1 }, // Endoscope
-      ],
-      expectedDuration: 75,
-    },
-    {
-      name: "Cardiac Bypass",
-      code: "33533",
-      instruments: [
-        { _id: instruments[0]._id, qty: 5 }, // Scalpel
-        { _id: instruments[1]._id, qty: 3 }, // Forceps
-      ],
-      robots: [
-        { _id: robots[0]._id, qty: 1 }, // Da Vinci Robot
-      ],
-      supplies: [
-        { _id: supplies[3]._id, qty: 2 }, // IV Bag
-        { _id: supplies[5]._id, qty: 1 }, // Catheter
-        { _id: supplies[2]._id, qty: 1 }, // Surgical Mask
-      ],
-      expectedDuration: 180,
+      name: "Dr. Jane Smith",
+      specialty: "General Surgery",
+      procedure: {
+        name: insertedSurgeries[1].name, // Cholecystectomy
+        code: insertedSurgeries[1].code,
+      },
+      preferences: {
+        instruments: [
+          { _id: instruments[2]._id, qty: 4 }, // Surgical Scissors
+        ],
+        robots: [
+          { _id: robots[0]._id, qty: 1 }, // Da Vinci Robot
+        ],
+        supplies: [
+          { _id: supplies[1]._id, qty: 6 }, // Gauze
+          { _id: supplies[3]._id, qty: 2 }, // IV Bag
+          { _id: supplies[5]._id, qty: 1 }, // Catheter
+        ],
+      },
     },
   ];
 
-  // const surgeries = [
-  //   {
-  //     name: "Appendectomy",
-  //     code: "44950",
-  //     instruments: [
-  //       { _id: instruments[0]._id, qty: 3 }, // Scalpel
-  //       { _id: instruments[1]._id, qty: 2 }, // Forceps
-  //     ],
-  //     robots: [
-  //       { _id: robots[0]._id, qty: 1 }, // Da Vinci Robot
-  //     ],
-  //     supplies: [
-  //       { _id: supplies[0]._id, qty: 5 }, // Syringe
-  //       { _id: supplies[1]._id, qty: 10 }, // Gauze
-  //     ],
-  //     expectedDuration: 90,
-  //   },
-  //   {
-  //     name: "Cholecystectomy",
-  //     code: "47562",
-  //     instruments: [
-  //       { _id: instruments[2]._id, qty: 4 }, // Surgical Scissors
-  //     ],
-  //     robots: [
-  //       { _id: robots[0]._id, qty: 1 }, // Da Vinci Robot
-  //     ],
-  //     supplies: [
-  //       { _id: supplies[1]._id, qty: 8 }, // Gauze
-  //     ],
-  //     expectedDuration: 120,
-  //   },
-  //   {
-  //     name: "Cataract Surgery",
-  //     code: "66984",
-  //     instruments: [
-  //       { _id: instruments[0]._id, qty: 1 }, // Scalpel
-  //       { _id: instruments[1]._id, qty: 1 }, // Forceps
-  //     ],
-  //     supplies: [
-  //       { _id: supplies[0]._id, qty: 2 }, // Syringe
-  //     ],
-  //     expectedDuration: 60,
-  //   },
-  // ];
-
+  // Insert instruments, supplies, robots, and surgeons into collections
   await Instrument.insertMany(instruments);
   await Supply.insertMany(supplies);
   await Robot.insertMany(robots);
-  await Surgery.insertMany(surgeries);
+  await Surgeon.insertMany(surgeons);
 
   console.log("Seed data added to the collections");
 

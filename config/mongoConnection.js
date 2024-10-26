@@ -1,19 +1,34 @@
-import { MongoClient } from "mongodb";
+// db.js (or mongoConnection.js)
+
+import mongoose from "mongoose";
 import { mongoConfig } from "./settings.js";
 
-let _connection = undefined;
-let _db = undefined;
+let isConnected = false;
 
 const dbConnection = async () => {
-  if (!_connection) {
-    _connection = await MongoClient.connect(mongoConfig.serverUrl);
-    _db = _connection.db(mongoConfig.database);
+  if (!isConnected) {
+    try {
+      await mongoose.connect(mongoConfig.serverUrl, {
+        dbName: mongoConfig.database,
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      });
+      isConnected = true;
+      console.log("Connected to MongoDB via Mongoose");
+    } catch (error) {
+      console.error("Failed to connect to MongoDB", error);
+      process.exit(1); // Exit process with failure
+    }
   }
-
-  return _db;
 };
+
 const closeConnection = async () => {
-  await _connection.close();
+  if (isConnected) {
+    await mongoose.connection.close();
+    isConnected = false;
+    console.log("Disconnected from MongoDB");
+  }
 };
 
 export { dbConnection, closeConnection };
+  

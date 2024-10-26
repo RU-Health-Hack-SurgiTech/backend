@@ -3,6 +3,10 @@ import express from "express";
 const app = express();
 
 import routesConfig from "./routes/index.js";
+import { dbConnection } from "./config/mongoConnection.js";
+
+dbConnection();
+
 
 app.use(express.json());
 

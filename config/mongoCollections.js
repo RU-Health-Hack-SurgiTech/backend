@@ -14,3 +14,9 @@ const getCollectionFn = (collection) => {
     return _col;
   };
 };
+
+
+export const instruments = getCollectionFn('instruments');
+export const surgeries = getCollectionFn('surgeries');
+export const supplies = getCollectionFn('supplies');
+export const robots = getCollectionFn('robots');

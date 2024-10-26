@@ -1,13 +1,13 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const { Schema, model } = mongoose;
 
 const robotSchema = new Schema({
-    name: { type: String, required: true },
-    model: { type: String, required: true },
-    maintenanceSchedule: { type: [Date], required: true },
-    softwareVersion: { type: String, required: true },
-    tracking: { type: [Date], default: [] } 
-}, { timestamps: true });
+  name: { type: String, required: true },
+  model: { type: String, required: true },
+  maintenanceSchedule: { type: [Date], required: true },
+  softwareVersion: { type: String, required: true },
+  tracking: { type: [Date], default: [] },
+});
 
-export default model('Robot', robotSchema);
+export default model("Robot", robotSchema);

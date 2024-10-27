@@ -37,21 +37,47 @@ export const suggestFeasibleSchedule = async (schedule) => {
     let suggestedSchedule = [];
 
     // Sort schedule by day to process each date individually
-    const scheduleByDate = schedule.reduce(
-      (acc, { time, surgery, surgeonName }) => {
-        const day = moment(time).format("YYYY-MM-DD");
-        if (!acc[day]) acc[day] = [];
-        acc[day].push({ time, surgery, surgeonName });
-        return acc;
-      },
-      {}
-    );
-
+    const scheduleByDate = schedule.reduce((acc, { time, appointmentId }) => {
+      const day = moment(time).format("YYYY-MM-DD");
+      if (!acc[day]) acc[day] = [];
+      acc[day].push({ time, appointmentId });
+      return acc;
+    }, {});
     for (const [day, surgeries] of Object.entries(scheduleByDate)) {
-      for (const { time, surgery: surgeryCode, surgeonName } of surgeries) {
+      for (const { time, surgeonName, appointmentId } of surgeries) {
         const scheduledTime = moment(time);
         let resolvedTime = scheduledTime;
         let reasons = [];
+
+        // Fetch the surgeon based on the appointmentId
+        const surgeon = await Surgeon.findOne({
+          "appointments._id": appointmentId,
+        })
+          .populate("procedures.preferences.instruments._id")
+          .populate("procedures.preferences.supplies._id")
+          .populate("appointments._id");
+
+        // Check if the surgeon is found
+        if (!surgeon) {
+          return {
+            valid: false,
+            message: `No surgeon found with appointment ID: ${appointmentId}`,
+          };
+        }
+
+        // Locate the specific appointment using appointmentId
+        const appointment = surgeon.appointments.find(
+          (app) => app._id.toString() === appointmentId
+        );
+        if (!appointment) {
+          return {
+            valid: false,
+            message: `No appointment found with ID: ${appointmentId}`,
+          };
+        }
+
+        // Get the surgery code from the appointment
+        const surgeryCode = appointment.surgeryCode; // Adjust if the field name is different
 
         const surgeryDetails = allSurgeries.find((s) => s.code === surgeryCode);
         if (!surgeryDetails) {
@@ -61,20 +87,20 @@ export const suggestFeasibleSchedule = async (schedule) => {
           };
         }
 
-        const surgeon = await Surgeon.findOne({ name: surgeonName })
-          .populate("preferences.instruments._id")
-          .populate("preferences.supplies._id");
-
         let dayConflict = false;
 
-        // Instrument scheduling based on surgeon's preferences or default surgery requirements
+        // Locate specific surgeon's procedure if it matches the surgery code
+        const surgeonProcedure = surgeon.procedures.find(
+          (proc) => proc.code === surgeryCode
+        );
+
+        // Instrument scheduling logic
         for (const instrumentReq of surgeryDetails.instruments) {
           const instrumentId = instrumentReq._id._id.toString();
           const instrument = instrumentAvailability[instrumentId];
 
-          // Give priority to surgeon's preference, otherwise use surgery quantity
           const preferredQty =
-            surgeon?.preferences?.instruments.find(
+            surgeonProcedure?.preferences?.instruments.find(
               (pref) => pref._id._id.toString() === instrumentId
             )?.qty || instrumentReq.qty;
 
@@ -123,14 +149,13 @@ export const suggestFeasibleSchedule = async (schedule) => {
           continue;
         }
 
-        // Supply scheduling based on surgeon's preferences or default surgery requirements
+        // Supply scheduling logic
         for (const supplyReq of surgeryDetails.supplies) {
           const supplyId = supplyReq._id._id.toString();
           const supply = supplyAvailability[supplyId];
 
-          // Give priority to surgeon's preference, otherwise use surgery quantity
           const preferredQty =
-            surgeon?.preferences?.supplies.find(
+            surgeonProcedure?.preferences?.supplies.find(
               (pref) => pref._id._id.toString() === supplyId
             )?.qty || supplyReq.qty;
 
@@ -181,12 +206,12 @@ export const suggestFeasibleSchedule = async (schedule) => {
 
         // Append the scheduled surgery with adjustments (if any)
         suggestedSchedule.push({
+          _id: appointmentId,
           time: resolvedTime.format("MM/DD/YYYY HH:mm"),
           surgery: surgeryCode,
           surgeon: surgeonName,
-          reason: reasons.length
-            ? reasons.join("; ")
-            : "Scheduled as requested",
+          reason: reasons.length ? reasons : "Scheduled as requested",
+          adjusted: reasons.length ? true : false,
         });
       }
     }

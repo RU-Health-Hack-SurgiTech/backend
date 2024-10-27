@@ -1,9 +1,12 @@
 import mongoose from "mongoose";
+import bcrypt from "bcrypt";
 import Surgery from "./models/Surgery.js";
 import Instrument from "./models/Instrument.js";
 import Supply from "./models/Supply.js";
 import Robot from "./models/Robot.js";
 import Surgeon from "./models/Surgeon.js";
+import User from "./models/User.js";
+import Patient from "./models/Patient.js";
 import { dbConnection } from "./config/mongoConnection.js";
 
 const seedData = async () => {
@@ -15,6 +18,8 @@ const seedData = async () => {
   await Supply.deleteMany({});
   await Robot.deleteMany({});
   await Surgeon.deleteMany({});
+  await User.deleteMany({});
+  await Patient.deleteMany({});
   // mongoose.deleteModel(/.+/); // Clears all cached models
 
   const instruments = [
@@ -149,50 +154,128 @@ const seedData = async () => {
   // Insert surgeries into the Surgery collection and fetch their IDs
   const insertedSurgeries = await Surgery.insertMany(surgeries);
 
+  const saltRounds = 10;
+
+  const users = [
+    {
+      username: "drjohndoe",
+      password: await bcrypt.hash("password123", saltRounds),
+      role: "surgeon",
+    },
+    {
+      username: "drjanesmith",
+      password: await bcrypt.hash("password456", saltRounds),
+      role: "surgeon",
+    },
+  ];
+
+  const insertedUsers = await User.insertMany(users);
+
+  const patients = [
+    {
+      name: "Alice Johnson",
+      age: 30,
+      gender: "Female",
+      medicalHistory: ["Diabetes", "Hypertension"],
+      surgeries: [],
+    },
+    {
+      name: "Bob Smith",
+      age: 45,
+      gender: "Male",
+      medicalHistory: ["Asthma"],
+      surgeries: [],
+    },
+    {
+      name: "Carol Williams",
+      age: 38,
+      gender: "Female",
+      medicalHistory: ["Allergy"],
+      surgeries: [],
+    },
+    {
+      name: "David Brown",
+      age: 50,
+      gender: "Male",
+      medicalHistory: ["Heart Disease"],
+      surgeries: [],
+    },
+  ];
+
+  const insertedPatients = await Patient.insertMany(patients);
+
   // Define surgeons with references to surgeries
   const surgeons = [
     {
       name: "Dr. John Doe",
       specialty: "General Surgery",
-      procedure: {
-        name: insertedSurgeries[0].name, // Appendectomy
-        code: insertedSurgeries[0].code,
-      },
-      preferences: {
-        instruments: [
-          { _id: instruments[0]._id, qty: 7 }, // Scalpel
-          { _id: instruments[1]._id, qty: 2 }, // Forceps
-        ],
-        robots: [
-          { _id: robots[0]._id, qty: 1 }, // Da Vinci Robot
-        ],
-        supplies: [
-          { _id: supplies[1]._id, qty: 8 }, // Gauze
-          { _id: supplies[3]._id, qty: 2 }, // IV Bag
-          { _id: supplies[5]._id, qty: 7 }, // Catheter
-        ],
-      },
+      username: insertedUsers[0].username, // Link to the username of the user
+      procedures: [
+        {
+          name: insertedSurgeries[0].name,
+          code: insertedSurgeries[0].code,
+          preferences: {
+            instruments: [
+              { _id: instruments[0]._id, qty: 7 }, // Scalpel
+              { _id: instruments[1]._id, qty: 2 }, // Forceps
+            ],
+            robots: [{ _id: robots[0]._id, qty: 1 }], // Da Vinci Robot
+            supplies: [
+              { _id: supplies[1]._id, qty: 8 }, // Gauze
+              { _id: supplies[3]._id, qty: 2 }, // IV Bag
+              { _id: supplies[5]._id, qty: 7 }, // Catheter
+            ],
+          },
+        },
+        {
+          name: insertedSurgeries[1].name,
+          code: insertedSurgeries[1].code,
+          preferences: {
+            instruments: [
+              { _id: instruments[2]._id, qty: 4 }, // Surgical Scissors
+            ],
+            robots: [{ _id: robots[0]._id, qty: 1 }], // Da Vinci Robot
+            supplies: [
+              { _id: supplies[0]._id, qty: 5 }, // Syringe
+              { _id: supplies[1]._id, qty: 10 }, // Gauze
+            ],
+          },
+        },
+      ],
+      appointments: [
+        {
+          surgeryCode: insertedSurgeries[0].code,
+          patientID: insertedPatients[0]._id, // Link to Bob Smith
+          surgeryBefore: new Date("2024-11-06"),
+        },
+      ],
     },
     {
       name: "Dr. Jane Smith",
       specialty: "General Surgery",
-      procedure: {
-        name: insertedSurgeries[1].name, // Cholecystectomy
-        code: insertedSurgeries[1].code,
-      },
-      preferences: {
-        instruments: [
-          { _id: instruments[2]._id, qty: 4 }, // Surgical Scissors
-        ],
-        robots: [
-          { _id: robots[0]._id, qty: 1 }, // Da Vinci Robot
-        ],
-        supplies: [
-          { _id: supplies[1]._id, qty: 6 }, // Gauze
-          { _id: supplies[3]._id, qty: 2 }, // IV Bag
-          { _id: supplies[5]._id, qty: 1 }, // Catheter
-        ],
-      },
+      username: insertedUsers[1].username, // Link to the username of the user
+      procedures: [
+        {
+          name: insertedSurgeries[1].name,
+          code: insertedSurgeries[1].code,
+          preferences: {
+            instruments: [{ _id: instruments[2]._id, qty: 4 }], // Surgical Scissors
+            robots: [{ _id: robots[0]._id, qty: 1 }], // Da Vinci Robot
+            supplies: [
+              { _id: supplies[1]._id, qty: 6 }, // Gauze
+              { _id: supplies[3]._id, qty: 2 }, // IV Bag
+              { _id: supplies[5]._id, qty: 1 }, // Catheter
+            ],
+          },
+        },
+      ],
+      appointments: [
+        {
+          surgeryCode: insertedSurgeries[1].code,
+          patientID: insertedPatients[1]._id, // Link to Alice Johnson
+          surgeryBefore: new Date("2024-11-02"),
+        },
+      ],
     },
   ];
 

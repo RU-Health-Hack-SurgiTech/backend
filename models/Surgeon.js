@@ -31,6 +31,7 @@ const AppointmentSchema = new mongoose.Schema({
   surgeryCode: { type: String, required: true },
   patientID: { type: mongoose.Schema.Types.ObjectId, ref: "Patient" },
   surgeryBefore: { type: Date, required: true },
+  isScheduled: { type: Boolean },
 });
 
 const SurgeonSchema = new mongoose.Schema({
@@ -39,7 +40,6 @@ const SurgeonSchema = new mongoose.Schema({
   username: { type: String, required: true },
   procedures: [ProcedureSchema],
   appointments: [AppointmentSchema],
-  isScheduled: { type: Boolean },
 });
 
 export default mongoose.model("Surgeon", SurgeonSchema);

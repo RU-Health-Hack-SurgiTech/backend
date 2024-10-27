@@ -1,6 +1,10 @@
 // routes/schedule.js
 import { Router } from "express";
-import { suggestFeasibleSchedule, getAppointments } from "../data/scheduler.js";
+import {
+  suggestFeasibleSchedule,
+  getAppointments,
+  updateAppointments,
+} from "../data/scheduler.js";
 
 const router = Router();
 
@@ -41,6 +45,15 @@ router.get("/appointments", async (req, res) => {
   }
 });
 
-router.patch("/confirmAppointments", async (req, res) => {});
+router.patch("/confirmAppointments", async (req, res) => {
+  try {
+    const updateAppointmentsInDB = await updateAppointments(
+      req.body.appointments
+    );
+    return res.json(updateAppointmentsInDB);
+  } catch (error) {
+    return res.status(400).json({ error: "Internal Server Error" });
+  }
+});
 
 export default router;

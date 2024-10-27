@@ -246,13 +246,52 @@ export const suggestFeasibleSchedule = async (schedule) => {
 };
 
 export const getAppointments = async () => {
-  const surgeonsAppointment = await Surgeon.find().populate("appointments._id");
-  if (!surgeonsAppointment) throw new Error("Internal Server Error");
+  const surgeonsAppointments = await Surgeon.find();
 
-  const surgeonAppointments = surgeonsAppointment.map((surgeon) => ({
-    name: surgeon.name,
-    appointments: surgeon.appointments,
-  }));
+  if (!surgeonsAppointments) throw new Error("Internal Server Error");
 
-  return surgeonAppointments;
+  const formattedAppointments = [];
+
+  for (const surgeon of surgeonsAppointments) {
+    for (const appointment of surgeon.appointments) {
+      // Get surgery details based on surgeryCode
+      const surgeryDetails = await Surgery.findOne({
+        code: appointment.surgeryCode,
+      }).populate("expectedDuration");
+
+      // Get patient details based on patientID
+      const patientDetails = await Patient.findById(appointment.patientID);
+
+      if (surgeryDetails && patientDetails) {
+        formattedAppointments.push({
+          _id: appointment._id,
+          patient: patientDetails.name, // Assuming name field in Patient model
+          surgeon: surgeon.name,
+          surgeryBefore: appointment.surgeryBefore, // Date of surgery
+          surgery: surgeryDetails.code, // Surgery code
+          surgeryName: surgeryDetails.name, // Assuming name field in Surgery model
+          duration: surgeryDetails.expectedDuration, // Expected duration from Surgery
+        });
+      }
+    }
+  }
+
+  return formattedAppointments;
+};
+
+export const updateAppointments = async (appointmentList) => {
+  try {
+    // Iterate over each appointment ID in the appointmentList
+    for (const appointmentId of appointmentList) {
+      // Update the surgeon's appointment with the matching _id
+      await Surgeon.updateMany(
+        { "appointments._id": appointmentId }, // Find surgeons with the specified appointment ID
+        { $set: { "appointments.$.isScheduled": true } } // Set isScheduled to true for that appointment
+      );
+    }
+    return { success: true, message: "Appointments updated successfully." };
+  } catch (error) {
+    console.error("Error updating appointments:", error);
+    throw new Error("Failed to update appointments.");
+  }
 };

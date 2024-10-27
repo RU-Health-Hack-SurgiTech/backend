@@ -28,4 +28,6 @@ router.post("/addAppointment", async (req, res) => {
   }
 });
 
+
+
 export default router;

@@ -247,6 +247,7 @@ const seedData = async () => {
           surgeryCode: insertedSurgeries[0].code,
           patientID: insertedPatients[0]._id, // Link to Bob Smith
           surgeryBefore: new Date("2024-11-06"),
+          isScheduled: false,
         },
       ],
     },
@@ -274,6 +275,7 @@ const seedData = async () => {
           surgeryCode: insertedSurgeries[1].code,
           patientID: insertedPatients[1]._id, // Link to Alice Johnson
           surgeryBefore: new Date("2024-11-02"),
+          isScheduled: false,
         },
       ],
     },

@@ -39,6 +39,7 @@ const SurgeonSchema = new mongoose.Schema({
   username: { type: String, required: true },
   procedures: [ProcedureSchema],
   appointments: [AppointmentSchema],
+  isScheduled: { type: Boolean },
 });
 
 export default mongoose.model("Surgeon", SurgeonSchema);

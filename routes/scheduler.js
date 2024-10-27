@@ -41,4 +41,6 @@ router.get("/appointments", async (req, res) => {
   }
 });
 
+router.patch("/confirmAppointments", async (req, res) => {});
+
 export default router;

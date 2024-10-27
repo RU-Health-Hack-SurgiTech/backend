@@ -3,6 +3,7 @@ import Surgery from "../models/Surgery.js";
 import Instrument from "../models/Instrument.js";
 import Supply from "../models/Supply.js";
 import Surgeon from "../models/Surgeon.js";
+import Patient from "../models/Patient.js";
 
 export const suggestFeasibleSchedule = async (schedule) => {
   try {
@@ -55,7 +56,8 @@ export const suggestFeasibleSchedule = async (schedule) => {
         })
           .populate("procedures.preferences.instruments._id")
           .populate("procedures.preferences.supplies._id")
-          .populate("appointments._id");
+          .populate("appointments._id")
+          .populate("appointments.patientID");
 
         // Check if the surgeon is found
         if (!surgeon) {
@@ -69,6 +71,7 @@ export const suggestFeasibleSchedule = async (schedule) => {
         const appointment = surgeon.appointments.find(
           (app) => app._id.toString() === appointmentId
         );
+
         if (!appointment) {
           return {
             valid: false,
@@ -196,10 +199,16 @@ export const suggestFeasibleSchedule = async (schedule) => {
 
         if (dayConflict) {
           suggestedSchedule.push({
+            originalTime: moment(time).format("MM/DD/YYYY HH:mm"),
             time: scheduledTime.format("MM/DD/YYYY HH:mm"),
             surgery: surgeryCode,
-            surgeon: surgeonName,
+            surgeryName: surgeryDetails.name,
             reason: "Conflict on this day. Try another day.",
+            adjusted: true,
+            patient: appointment.patientID.name,
+            surgeon: surgeon.name,
+            surgeryBefore: appointment.surgeryBefore,
+            duration: surgeryDetails.expectedDuration,
           });
           continue;
         }
@@ -207,11 +216,16 @@ export const suggestFeasibleSchedule = async (schedule) => {
         // Append the scheduled surgery with adjustments (if any)
         suggestedSchedule.push({
           _id: appointmentId,
+          originalTime: moment(time).format("MM/DD/YYYY HH:mm"),
           time: resolvedTime.format("MM/DD/YYYY HH:mm"),
           surgery: surgeryCode,
-          surgeon: surgeonName,
+          surgeryName: surgeryDetails.name,
           reason: reasons.length ? reasons : "Scheduled as requested",
           adjusted: reasons.length ? true : false,
+          patient: appointment.patientID.name,
+          surgeon: surgeon.name,
+          surgeryBefore: appointment.surgeryBefore,
+          duration: surgeryDetails.expectedDuration,
         });
       }
     }

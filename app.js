@@ -1,4 +1,5 @@
 import express from "express";
+import cors from 'cors';
 
 const app = express();
 
@@ -9,6 +10,8 @@ dbConnection();
 
 
 app.use(express.json());
+
+app.use(cors());
 
 routesConfig(app);
 

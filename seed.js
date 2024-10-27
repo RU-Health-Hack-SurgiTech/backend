@@ -560,92 +560,92 @@ const seedData = async () => {
 
   await Patient.insertMany(additionalPatients);
 
-  const additionalAppointments = [
-    {
-      surgeryCode: insertedSurgeries[4].code,
-      patientID: additionalPatients[0]._id,
-      surgeryBefore: new Date("2024-12-01"),
-    },
-    {
-      surgeryCode: insertedSurgeries[8].code,
-      patientID: additionalPatients[1]._id,
-      surgeryBefore: new Date("2024-12-03"),
-    },
-    {
-      surgeryCode: insertedSurgeries[9].code,
-      patientID: additionalPatients[2]._id,
-      surgeryBefore: new Date("2024-12-04"),
-    },
-    {
-      surgeryCode: insertedSurgeries[6].code,
-      patientID: additionalPatients[3]._id,
-      surgeryBefore: new Date("2024-12-05"),
-    },
-    {
-      surgeryCode: insertedSurgeries[10].code,
-      patientID: additionalPatients[4]._id,
-      surgeryBefore: new Date("2024-12-06"),
-    },
-    {
-      surgeryCode: insertedSurgeries[2].code,
-      patientID: additionalPatients[5]._id,
-      surgeryBefore: new Date("2024-12-08"),
-    },
-    {
-      surgeryCode: insertedSurgeries[7].code,
-      patientID: additionalPatients[6]._id,
-      surgeryBefore: new Date("2024-12-10"),
-    },
-    {
-      surgeryCode: insertedSurgeries[11].code,
-      patientID: additionalPatients[7]._id,
-      surgeryBefore: new Date("2024-12-11"),
-    },
-    {
-      surgeryCode: insertedSurgeries[12].code,
-      patientID: additionalPatients[8]._id,
-      surgeryBefore: new Date("2024-12-12"),
-    },
-    {
-      surgeryCode: insertedSurgeries[13].code,
-      patientID: additionalPatients[9]._id,
-      surgeryBefore: new Date("2024-12-13"),
-    },
-    {
-      surgeryCode: insertedSurgeries[0].code,
-      patientID: additionalPatients[10]._id,
-      surgeryBefore: new Date("2024-12-14"),
-    },
-    {
-      surgeryCode: insertedSurgeries[5].code,
-      patientID: additionalPatients[11]._id,
-      surgeryBefore: new Date("2024-12-15"),
-    },
-    {
-      surgeryCode: insertedSurgeries[3].code,
-      patientID: additionalPatients[12]._id,
-      surgeryBefore: new Date("2024-12-17"),
-    },
-    {
-      surgeryCode: insertedSurgeries[14].code,
-      patientID: additionalPatients[13]._id,
-      surgeryBefore: new Date("2024-12-18"),
-    },
-    {
-      surgeryCode: insertedSurgeries[1].code,
-      patientID: additionalPatients[14]._id,
-      surgeryBefore: new Date("2024-12-20"),
-    },
-  ];
+  // const additionalAppointments = [
+  //   {
+  //     surgeryCode: insertedSurgeries[4].code,
+  //     patientID: additionalPatients[0]._id,
+  //     surgeryBefore: new Date("2024-12-01"),
+  //   },
+  //   {
+  //     surgeryCode: insertedSurgeries[8].code,
+  //     patientID: additionalPatients[1]._id,
+  //     surgeryBefore: new Date("2024-12-03"),
+  //   },
+  //   {
+  //     surgeryCode: insertedSurgeries[9].code,
+  //     patientID: additionalPatients[2]._id,
+  //     surgeryBefore: new Date("2024-12-04"),
+  //   },
+  //   {
+  //     surgeryCode: insertedSurgeries[6].code,
+  //     patientID: additionalPatients[3]._id,
+  //     surgeryBefore: new Date("2024-12-05"),
+  //   },
+  //   {
+  //     surgeryCode: insertedSurgeries[10].code,
+  //     patientID: additionalPatients[4]._id,
+  //     surgeryBefore: new Date("2024-12-06"),
+  //   },
+  //   {
+  //     surgeryCode: insertedSurgeries[2].code,
+  //     patientID: additionalPatients[5]._id,
+  //     surgeryBefore: new Date("2024-12-08"),
+  //   },
+  //   {
+  //     surgeryCode: insertedSurgeries[7].code,
+  //     patientID: additionalPatients[6]._id,
+  //     surgeryBefore: new Date("2024-12-10"),
+  //   },
+  //   {
+  //     surgeryCode: insertedSurgeries[11].code,
+  //     patientID: additionalPatients[7]._id,
+  //     surgeryBefore: new Date("2024-12-11"),
+  //   },
+  //   {
+  //     surgeryCode: insertedSurgeries[12].code,
+  //     patientID: additionalPatients[8]._id,
+  //     surgeryBefore: new Date("2024-12-12"),
+  //   },
+  //   {
+  //     surgeryCode: insertedSurgeries[13].code,
+  //     patientID: additionalPatients[9]._id,
+  //     surgeryBefore: new Date("2024-12-13"),
+  //   },
+  //   {
+  //     surgeryCode: insertedSurgeries[0].code,
+  //     patientID: additionalPatients[10]._id,
+  //     surgeryBefore: new Date("2024-12-14"),
+  //   },
+  //   {
+  //     surgeryCode: insertedSurgeries[5].code,
+  //     patientID: additionalPatients[11]._id,
+  //     surgeryBefore: new Date("2024-12-15"),
+  //   },
+  //   {
+  //     surgeryCode: insertedSurgeries[3].code,
+  //     patientID: additionalPatients[12]._id,
+  //     surgeryBefore: new Date("2024-12-17"),
+  //   },
+  //   {
+  //     surgeryCode: insertedSurgeries[14].code,
+  //     patientID: additionalPatients[13]._id,
+  //     surgeryBefore: new Date("2024-12-18"),
+  //   },
+  //   {
+  //     surgeryCode: insertedSurgeries[1].code,
+  //     patientID: additionalPatients[14]._id,
+  //     surgeryBefore: new Date("2024-12-20"),
+  //   },
+  // ];
 
-  await Surgeon.updateMany(
-    {
-      name: {
-        $in: ["Dr. Emily Taylor", "Dr. Andrew Brown", "Dr. Rachel Green"],
-      },
-    },
-    { $push: { appointments: { $each: additionalAppointments } } }
-  );
+  // await Surgeon.updateMany(
+  //   {
+  //     name: {
+  //       $in: ["Dr. Emily Taylor", "Dr. Andrew Brown", "Dr. Rachel Green"],
+  //     },
+  //   },
+  //   { $push: { appointments: { $each: additionalAppointments } } }
+  // );
 
   console.log("Seed data added to the collections");
 

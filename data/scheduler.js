@@ -284,18 +284,22 @@ export const getAppointments = async () => {
 };
 
 export const updateAppointments = async (appointmentList) => {
-  try {
-    // Iterate over each appointment ID in the appointmentList
-    for (const appointmentId of appointmentList) {
-      // Update the surgeon's appointment with the matching _id
-      await Surgeon.updateMany(
-        { "appointments._id": appointmentId }, // Find surgeons with the specified appointment ID
-        { $set: { "appointments.$.isScheduled": true } } // Set isScheduled to true for that appointment
-      );
+    try {
+      for (const { appointmentId, time } of appointmentList) {
+        await Surgeon.updateMany(
+          { "appointments._id": appointmentId },
+          {
+            $set: {
+              "appointments.$.isScheduled": true,
+              "appointments.$.surgeryBefore": time,
+            },
+          }
+        );
+      }
+      return { success: true, message: "Appointments updated successfully." };
+    } catch (error) {
+      console.error("Error updating appointments:", error);
+      throw new Error("Failed to update appointments.");
     }
-    return { success: true, message: "Appointments updated successfully." };
-  } catch (error) {
-    console.error("Error updating appointments:", error);
-    throw new Error("Failed to update appointments.");
-  }
-};
+  };
+  

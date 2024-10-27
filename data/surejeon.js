@@ -10,6 +10,14 @@ export const getSurgeoon = async (username) => {
     .populate({
       path: "procedures.preferences.supplies._id",
       model: "Supply",
+    })
+    .populate({
+      path: "procedures.preferences.robots._id",
+      model: "Robot",
+    })
+    .populate({
+      path: "appointments.patientID",
+      model: "Patient",
     });
   if (!surgeon) {
     throw new Error("No surgeon with specified username");

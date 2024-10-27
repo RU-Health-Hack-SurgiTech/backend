@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import Robot from "./Robot.js";
+
 
 const PreferenceSchema = new mongoose.Schema({
   instruments: [

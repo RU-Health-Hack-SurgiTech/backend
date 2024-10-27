@@ -2,8 +2,8 @@ import { Router } from "express";
 const router = Router();
 
 const userData = [
-  { usernmae: "drjohndoe", password: "password123", role: "surgeon" },
-  { usernmae: "drjanesmith", password: "password456", role: "surgeon" },
+  { username: "drjohndoe", password: "password123", role: "surgeon" },
+  { username: "drjanesmith", password: "password456", role: "surgeon" },
   { username: "admin", password: "Admin@123", role: "scheduler" },
 ];
 

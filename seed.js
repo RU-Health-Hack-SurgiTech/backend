@@ -205,81 +205,80 @@ const seedData = async () => {
   const insertedPatients = await Patient.insertMany(patients);
 
   // Define surgeons with references to surgeries
-  const surgeons = [
-    {
-      name: "Dr. John Doe",
-      specialty: "General Surgery",
-      username: insertedUsers[0].username, // Link to the username of the user
-      procedures: [
-        {
-          name: insertedSurgeries[0].name,
-          code: insertedSurgeries[0].code,
-          preferences: {
-            instruments: [
-              { _id: instruments[0]._id, qty: 7 }, // Scalpel
-              { _id: instruments[1]._id, qty: 2 }, // Forceps
-            ],
-            robots: [{ _id: robots[0]._id, qty: 1 }], // Da Vinci Robot
-            supplies: [
-              { _id: supplies[1]._id, qty: 8 }, // Gauze
-              { _id: supplies[3]._id, qty: 2 }, // IV Bag
-              { _id: supplies[5]._id, qty: 7 }, // Catheter
-            ],
-          },
+const surgeons = [
+  {
+    name: "Dr. John Doe",
+    specialty: "General Surgery",
+    username: insertedUsers[0].username,
+    procedures: [
+      {
+        name: insertedSurgeries[0].name,
+        code: insertedSurgeries[0].code,
+        preferences: {
+          instruments: [
+            { _id: instruments[0]._id, qty: 7 },
+            { _id: instruments[1]._id, qty: 2 },
+          ],
+          robots: [{ _id: robots[0]._id, qty: 1 }],
+          supplies: [
+            { _id: supplies[1]._id, qty: 8 },
+            { _id: supplies[3]._id, qty: 2 },
+            { _id: supplies[5]._id, qty: 7 },
+          ],
         },
-        {
-          name: insertedSurgeries[1].name,
-          code: insertedSurgeries[1].code,
-          preferences: {
-            instruments: [
-              { _id: instruments[2]._id, qty: 4 }, // Surgical Scissors
-            ],
-            robots: [{ _id: robots[0]._id, qty: 1 }], // Da Vinci Robot
-            supplies: [
-              { _id: supplies[0]._id, qty: 5 }, // Syringe
-              { _id: supplies[1]._id, qty: 10 }, // Gauze
-            ],
-          },
+      },
+      {
+        name: insertedSurgeries[1].name,
+        code: insertedSurgeries[1].code,
+        preferences: {
+          instruments: [{ _id: instruments[2]._id, qty: 4 }],
+          robots: [{ _id: robots[0]._id, qty: 1 }],
+          supplies: [
+            { _id: supplies[0]._id, qty: 5 },
+            { _id: supplies[1]._id, qty: 10 },
+          ],
         },
-      ],
-      appointments: [
-        {
-          surgeryCode: insertedSurgeries[0].code,
-          patientID: insertedPatients[0]._id, // Link to Bob Smith
-          surgeryBefore: new Date("2024-11-06"),
-          isScheduled: false,
+      },
+    ],
+    appointments: [
+      {
+        surgeryCode: insertedSurgeries[0].code,
+        patientID: insertedPatients[0]._id,
+        surgeryBefore: new Date("2024-11-06"),
+        isScheduled: false, // Ensure this is included
+      },
+    ],
+  },
+  {
+    name: "Dr. Jane Smith",
+    specialty: "General Surgery",
+    username: insertedUsers[1].username,
+    procedures: [
+      {
+        name: insertedSurgeries[1].name,
+        code: insertedSurgeries[1].code,
+        preferences: {
+          instruments: [{ _id: instruments[2]._id, qty: 4 }],
+          robots: [{ _id: robots[0]._id, qty: 1 }],
+          supplies: [
+            { _id: supplies[1]._id, qty: 6 },
+            { _id: supplies[3]._id, qty: 2 },
+            { _id: supplies[5]._id, qty: 1 },
+          ],
         },
-      ],
-    },
-    {
-      name: "Dr. Jane Smith",
-      specialty: "General Surgery",
-      username: insertedUsers[1].username, // Link to the username of the user
-      procedures: [
-        {
-          name: insertedSurgeries[1].name,
-          code: insertedSurgeries[1].code,
-          preferences: {
-            instruments: [{ _id: instruments[2]._id, qty: 4 }], // Surgical Scissors
-            robots: [{ _id: robots[0]._id, qty: 1 }], // Da Vinci Robot
-            supplies: [
-              { _id: supplies[1]._id, qty: 6 }, // Gauze
-              { _id: supplies[3]._id, qty: 2 }, // IV Bag
-              { _id: supplies[5]._id, qty: 1 }, // Catheter
-            ],
-          },
-        },
-      ],
-      appointments: [
-        {
-          surgeryCode: insertedSurgeries[1].code,
-          patientID: insertedPatients[1]._id, // Link to Alice Johnson
-          surgeryBefore: new Date("2024-11-02"),
-          isScheduled: false,
-        },
-      ],
-    },
-  ];
+      },
+    ],
+    appointments: [
+      {
+        surgeryCode: insertedSurgeries[1].code,
+        patientID: insertedPatients[1]._id,
+        surgeryBefore: new Date("2024-11-02"),
+        isScheduled: false, // Ensure this is included
+      },
+    ],
+  },
+];
+
 
   // Insert instruments, supplies, robots, and surgeons into collections
   await Instrument.insertMany(instruments);

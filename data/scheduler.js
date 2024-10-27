@@ -276,6 +276,10 @@ export const getAppointments = async () => {
     }
   }
 
+  formattedAppointments.sort((a, b) => {
+    return moment(a.surgeryBefore).diff(moment(b.surgeryBefore));
+  });
+
   return formattedAppointments;
 };
 

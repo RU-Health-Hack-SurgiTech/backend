@@ -230,3 +230,15 @@ export const suggestFeasibleSchedule = async (schedule) => {
     };
   }
 };
+
+export const getAppointments = async () => {
+  const surgeonsAppointment = await Surgeon.find().populate("appointments._id");
+  if (!surgeonsAppointment) throw new Error("Internal Server Error");
+
+  const surgeonAppointments = surgeonsAppointment.map((surgeon) => ({
+    name: surgeon.name,
+    appointments: surgeon.appointments,
+  }));
+
+  return surgeonAppointments;
+};

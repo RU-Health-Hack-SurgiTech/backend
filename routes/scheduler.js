@@ -1,6 +1,6 @@
 // routes/schedule.js
 import { Router } from "express";
-import {suggestFeasibleSchedule} from "../data/scheduler.js";
+import { suggestFeasibleSchedule, getAppointments } from "../data/scheduler.js";
 
 const router = Router();
 
@@ -28,6 +28,15 @@ router.post("/", async (req, res) => {
     }
   } catch (error) {
     console.error("Error processing schedule:", error);
+    res.status(500).json({ message: "An internal server error occurred" });
+  }
+});
+
+router.get("/appointments", async (req, res) => {
+  try {
+    const allApointments = await getAppointments();
+    return res.json(allApointments);
+  } catch (error) {
     res.status(500).json({ message: "An internal server error occurred" });
   }
 });
